@@ -96,7 +96,7 @@ zscoretransform=function(cov, size, threshold, ssize){
   #calculates z - leaves out the beginning and end of each transcript
   window=c(1:size)
   subwindow=c(1:ssize)
-  stuff=array(dim=c(4, max, 6))
+  scores=array(dim=c(4, max, 6))
   matrix=array(dim=c(3, 3))
   matrix[,1]=c(1, 0, 0)
   matrix[,2]=c(0, 1, -1)
@@ -128,7 +128,7 @@ zscoretransform=function(cov, size, threshold, ssize){
         mean=mean(window)
         sd=sd(window)
         zscore=(acov[[i*max+k, 7]]-mean)/(sd+0.0001)
-        stuff[j+1,k,i+1]=zscore
+        scores[j+1,k,i+1]=zscore
       }
     }
   }
@@ -140,7 +140,7 @@ zscoretransform=function(cov, size, threshold, ssize){
   for(j in 1:6){
     for(i in 1+size:max-size){
       for(k in 1:3){
-        values[k]=as.numeric(stuff[k, i, j])
+        values[k]=as.numeric(scores[k, i, j])
       }
       mean=mean(values)
       if(is.na(mean)){
@@ -151,8 +151,8 @@ zscoretransform=function(cov, size, threshold, ssize){
   #setting last column of acov
   for(i in 0:5){
     for(j in (size):(max-size)){
-      stuff[4, j, i+1]=(stuff[1, j, i+1]+stuff[2, j, i+1]+stuff[3, j, i+1])/3
-      acov[i*max+j, 7]=stuff[4, j, i+1]
+      scores[4, j, i+1]=(scores[1, j, i+1]+scores[2, j, i+1]+scores[3, j, i+1])/3
+      acov[i*max+j, 7]=scores[4, j, i+1]
     }
   }
   #acov=acov%>%mutate(score=z*counts)
@@ -337,12 +337,12 @@ laggedtransform=function(cov, window, threshold, subwindow){
     arrange(experiment)%>%mutate(scan1=0, scan2=0, scan3=0)
   max=acov%>%arrange(desc(position))
   max=max[[1,2]]
-  ohboy=acov%>%arrange(desc(position))
+  arranged=acov%>%arrange(desc(position))
   for(i in 1:6){
     print(i)
     values=acov$counts
-    max=ohboy[[1,2]]
-    max2=ohboy[[1,2]]
+    max=arranged[[1,2]]
+    max2=arranged[[1,2]]
     j3=window
     for(j in window:max){
       position=(i-1)*max2+j3
@@ -365,8 +365,8 @@ laggedtransform=function(cov, window, threshold, subwindow){
   
   for(i in 1:6){
     values=acov$counts
-    max=ohboy[[1,2]]
-    max2=ohboy[[1,2]]
+    max=arranged[[1,2]]
+    max2=arranged[[1,2]]
     print(i)
     for(j in (max-window+1):1){
       position=(i-1)*max2+j
@@ -384,7 +384,7 @@ laggedtransform=function(cov, window, threshold, subwindow){
   }
   for(i in 1:6){
     values=acov$counts
-    max=ohboy[[1,2]]
+    max=arranged[[1,2]]
     print(i)
     for(j in (max-window/2+1):(window/2)){
       position=(i-1)*max+j
